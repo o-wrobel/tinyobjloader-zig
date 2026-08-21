@@ -14,12 +14,12 @@ pub const Scene = struct {
 
 pub const Config = struct {
     allocator: ?std.mem.Allocator = null,
-    triangulate: bool = false,
-    store_vertex_colors: bool = false,
-    vertex_color_fallback: bool = false,
+    triangulate: bool = true,
+    store_vertex_colors: bool = true,
+    vertex_color_fallback: bool = true,
     parse_freeform: bool = false,
     use_arena: bool = false,
-    num_threads: c_int = 0,
+    num_threads: c_int = -1,
     max_vertices: usize = 0,
     max_indices: usize = 0,
     max_faces: usize = 0,
@@ -92,8 +92,42 @@ test "declarations" { std.testing.refAllDecls(@This()); }
 
 test loadFromMemory {
     const data = @embedFile("pyramid.obj");
+    const Vec3f = [3]f32;
+    const Vertex = struct {
+
+        position: Vec3f,
+        normal: Vec3f,
+        color: Vec3f
+    };
+    const allocator = std.testing.allocator;
     const scene = try loadFromMemory(data, .{});
-    _ = scene;
+
+    const shape = (scene.shapes orelse unreachable)[0];
+    const vertices = try allocator.alloc(Vertex, @intCast(shape.mesh.num_indices));
+    defer allocator.free(vertices);
+
+    for (0..shape.mesh.num_indices) |i| {
+        const index = shape.mesh.indices[i];
+        const vi: usize = @intCast(index.vertex_index);
+        const ni: usize = @intCast(index.normal_index);
+        vertices[i] = Vertex{
+            .position = .{
+                scene.attributes.vertices.ptr[3 * vi + 0],
+                -scene.attributes.vertices.ptr[3 * vi + 2], // Assuming Y represents up
+                scene.attributes.vertices.ptr[3 * vi + 1],
+            },
+            .normal = .{
+                scene.attributes.normals.ptr[3 * ni + 0],
+                -scene.attributes.normals.ptr[3 * ni + 2], // Assuming Y represents up
+                scene.attributes.normals.ptr[3 * ni + 1],
+            },
+            .color = .{
+                scene.attributes.colors.ptr[3 * vi + 0],
+                scene.attributes.colors.ptr[3 * vi + 1],
+                scene.attributes.colors.ptr[3 * vi + 2],
+            },
+        };
+    }
 }
 
 test Config {

@@ -1,0 +1,13 @@
+.{
+    .name = .tiny_obj,
+    .version = "0.0.1",
+    .minimum_zig_version = "0.16.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "root.zig",
+        "lib",
+        "pyramid.obj",
+    },
+    .fingerprint = 0xbf63b72b2279631e,
+}

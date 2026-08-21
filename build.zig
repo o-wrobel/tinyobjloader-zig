@@ -4,20 +4,20 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const c = b.addTranslateC(.{
-        .root_source_file = b.path("lib/tiny_obj_c.h"),
+        .root_source_file = b.path("vendor/tiny_obj_c.h"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,
     });
-    const mod = b.addModule("tiny_obj", .{
-        .root_source_file = b.path("root.zig"),
+    const mod = b.addModule("tinyobjloader", .{
+        .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,
         .imports = &.{ .{.name = "c", .module = c.createModule()} }
     });
-    mod.addCSourceFile(.{ .file = b.path("lib/tiny_obj_c.c") });
-    mod.addCSourceFile(.{ .file = b.path("lib/tobj_tess.c") });
+    mod.addCSourceFile(.{ .file = b.path("vendor/tiny_obj_c.c") });
+    mod.addCSourceFile(.{ .file = b.path("vendor/tobj_tess.c") });
 
     const tests = b.addTest(.{
         .root_module = mod,

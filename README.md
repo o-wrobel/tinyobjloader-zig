@@ -20,11 +20,12 @@ pub fn build(b: *std.Build) void {
 
     // ...
 
-    const tinyobj = b.dependency("tinyobjloader", .{
+    const tinyobj_dep = b.dependency("tinyobjloader", .{
         .target = target,
         .optimize = optimize,
         .link_libc = true,
     });
+    const tinyobjloader = tinyobj_dep.module("tinyobjloader");
 
     const exe = b.addExecutable(.{
         .name = "my_program",
@@ -33,7 +34,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "tinyobj", .module = tinyobj },
+                .{ .name = "tinyobjloader", .module = tinyobjloader },
             },
         }),
     });
@@ -47,7 +48,7 @@ Load an OBJ file:
 
 ```zig
 const std = @import("std");
-const tinyobj = @import("tinyobj");
+const tobj = @import("tinyobjloader");
 
 pub fn main(init: std.process.Init) !void {
     const filename = "my_model.obj";
@@ -60,7 +61,7 @@ pub fn main(init: std.process.Init) !void {
     const text = try file_reader.interface.allocRemaining(allocator, .limited64(file_len+1));
     defer allocator.free(text);
 
-    const scene = try tinyobj.loadFromMemory(text, null);
+    const scene = try tobj.loadFromMemory(text, null);
     std.debug.print("My scene:\n{any}", .{scene});
     
     // ...

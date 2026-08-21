@@ -34,14 +34,14 @@ pub const Config = struct {
     pub fn toC(self: Config) c.tobj_load_config {
         const this_fields = @typeInfo(Config).@"struct".fields;
         const c_fields = @typeInfo(c.tobj_load_config).@"struct".fields;
-        var config: c.tobj_load_config = undefined;
+        var config: c.tobj_load_config = c.tobj_default_config();
         inline for (0..c_fields.len) |i| {
             const tf = this_fields[i];
             const cf = c_fields[i];
             comptime if (std.mem.eql(u8, tf.name, "allocator")) continue;
             @field(config, cf.name) = @field(self, tf.name);
         }
-        return .{};
+        return config;
     }
 };
 

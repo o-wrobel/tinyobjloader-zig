@@ -32,16 +32,16 @@ pub const Config = struct {
     mtl_resolver_user_data: ?*anyopaque = null,
 
     pub fn toC(self: Config) c.tobj_load_config {
-        const this_fields = @typeInfo(Config).@"struct".fields;
-        const c_fields = @typeInfo(c.tobj_load_config).@"struct".fields;
-        var config: c.tobj_load_config = c.tobj_default_config();
+        const this_fields = @typeInfo(Config).@"struct".field_names;
+        const c_fields = @typeInfo(c.tobj_load_config).@"struct".field_names;
+        var c_config: c.tobj_load_config = c.tobj_default_config();
         inline for (0..c_fields.len) |i| {
             const tf = this_fields[i];
             const cf = c_fields[i];
-            comptime if (std.mem.eql(u8, tf.name, "allocator")) continue;
-            @field(config, cf.name) = @field(self, tf.name);
+            comptime if (std.mem.eql(u8, tf, "allocator")) continue;
+            @field(c_config, cf) = @field(self, tf);
         }
-        return config;
+        return c_config;
     }
 };
 
@@ -134,3 +134,5 @@ test Config {
     const config: Config = .{};
     _ = config.toC();
 }
+
+test { std.testing.refAllDecls(@This()); }
